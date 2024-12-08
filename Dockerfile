@@ -1,27 +1,14 @@
-FROM node:20.10-bullseye-slim as base
+FROM node:20.10-bullseye-slim
 
 # Set up pnpm
 ENV PNPM_HOME="/root/.local/share/pnpm"
 ENV PATH="${PNPM_HOME}:${PATH}"
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-FROM base AS deps
-WORKDIR /app
-
-# Install dependencies required for sharp
-RUN pnpm setup && \
-    pnpm add -g sharp@0.33.0-rc.2
-
-# Production image
-FROM base AS runner
 WORKDIR /app
 
 # Set environment variables
 ENV NODE_ENV=production
-ENV NEXT_SHARP_PATH=/usr/local/lib/node_modules/sharp
-
-# Copy sharp from deps
-COPY --from=deps --chown=nextjs:nodejs /usr/local/lib/node_modules/sharp /usr/local/lib/node_modules/sharp
 
 # Create nextjs user/group
 RUN addgroup --system --gid 1001 nodejs && \
@@ -30,7 +17,7 @@ RUN addgroup --system --gid 1001 nodejs && \
 # Create .next directory and set permissions
 RUN mkdir .next && chown nextjs:nodejs .next
 
-# Copy build output and env file
+# Copy build output
 COPY --chown=nextjs:nodejs .next/standalone ./
 COPY --chown=nextjs:nodejs .next/static ./.next/static 
 COPY --chown=nextjs:nodejs public ./public
