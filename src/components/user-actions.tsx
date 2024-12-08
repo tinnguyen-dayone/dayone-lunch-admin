@@ -11,9 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User } from "@clerk/backend";
 import { SerializedClerkUser } from "@/types";
-import { UserProfile } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 
 export function UserActions({ user }: { user: SerializedClerkUser }) {

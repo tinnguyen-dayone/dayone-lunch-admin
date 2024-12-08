@@ -1,0 +1,109 @@
+name: Deploy Admin to EC2
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Next.js application
+        run: npm run build
+        env:
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PAT }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/dayone-lunch-admin:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+
+      - name: Add host key
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to EC2
+        env:
+          SSH_HOST: ${{ secrets.EC2_HOST }}
+          GHCR_PAT: ${{ secrets.GHCR_PAT }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+        run: |
+          cat > deploy.sh << 'EOL'
+          #!/bin/bash
+          set -e
+
+          # Stop and remove existing containers
+          docker rm -f dayone-lunch-admin || true
+          EOL
+
+          # Append environment-specific part
+          cat >> deploy.sh << EOF
+
+          # Create .env file
+          cat > .env << ENVEOF
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+          CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
+          NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+          ENVEOF
+
+          # Deploy admin container
+          docker run -d \
+            --name dayone-lunch-admin \
+            --network lunch-network \
+            -p 80:80 \
+            -v \$(pwd)/.env:/app/.env \
+            --restart on-failure \
+            ghcr.io/tinnguyen-dayone/dayone-lunch-admin:latest
+
+          # Verify container is running
+          docker ps | grep dayone-lunch-admin || exit 1
+          EOF
+
+          chmod +x deploy.sh
+          scp deploy.sh ubuntu@$SSH_HOST:~/deploy.sh
+          ssh ubuntu@$SSH_HOST "bash ~/deploy.sh && rm ~/deploy.sh"
+
+      - name: Verify Deployment
+        env:
+          SSH_HOST: ${{ secrets.EC2_HOST }}
+        run: |
+          sleep 10
+          ssh ubuntu@$SSH_HOST 'docker ps | grep -q dayone-lunch-admin'

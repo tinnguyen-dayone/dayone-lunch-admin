@@ -1,5 +1,4 @@
 import Image from "next/image";
-import { MoreHorizontal } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -10,9 +9,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { serializeClerkUser } from "@/lib/utils";
 import { User } from "@clerk/backend";
 import { UserActions } from "../user-actions";
-import { serializeClerkUser } from "@/lib/utils";
 
 export function UserList({ users }: { users: User[] }) {
   return (

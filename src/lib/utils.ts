@@ -1,4 +1,5 @@
 import { SerializedClerkUser } from "@/types";
+import { User } from "@clerk/backend";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -6,7 +7,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function serializeClerkUser(user: any): SerializedClerkUser {
+export function serializeClerkUser(user: User): SerializedClerkUser {
   return {
     id: user.id,
     email: user.emailAddresses[0]?.emailAddress,

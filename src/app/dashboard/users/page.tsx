@@ -1,5 +1,4 @@
 import { UserList } from "@/components/layout/UserDashboard";
-import { getUsers } from "@/lib/user";
 import { clerkClient } from "@clerk/nextjs/server";
 
 export default async function Page() {
