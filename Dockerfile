@@ -1,11 +1,12 @@
 FROM node:20.10-bullseye-slim as base
 
-# Install dependencies only when needed
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
 FROM base AS deps
 WORKDIR /app
 
 # Install dependencies required for sharp
-RUN npm install -g --arch=x64 --platform=linux --libc=glibc sharp@0.33.0-rc.2
+RUN pnpm add -g sharp@0.33.0-rc.2
 
 # Production image
 FROM base AS runner
