@@ -139,8 +139,8 @@ export const navItems: NavItem[] = [
     items: [], // No child items
   },
   {
-    title: "Transation",
-    url: "/dashboard/transation",
+    title: "Transactions",
+    url: "/dashboard/transactions",
     icon: "transaction",
     shortcut: ["p", "p"],
     isActive: false,
