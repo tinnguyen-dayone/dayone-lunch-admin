@@ -1,12 +1,16 @@
 FROM node:20.10-bullseye-slim as base
 
+# Set up pnpm
+ENV PNPM_HOME="/root/.local/share/pnpm"
+ENV PATH="${PNPM_HOME}:${PATH}"
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 FROM base AS deps
 WORKDIR /app
 
 # Install dependencies required for sharp
-RUN pnpm add -g sharp@0.33.0-rc.2
+RUN pnpm setup && \
+    pnpm add -g sharp@0.33.0-rc.2
 
 # Production image
 FROM base AS runner
