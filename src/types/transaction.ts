@@ -9,4 +9,5 @@ export interface Transaction {
   transaction_date: Date;
   paid: boolean;
   ticket_message_id: number;
+  username: string;
 }

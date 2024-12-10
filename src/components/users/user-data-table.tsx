@@ -13,7 +13,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ArrowUpDown } from "lucide-react"; // Add this import
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
@@ -38,16 +38,11 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
 }
 
-export function DataTable<TData, TValue>({
+export function UserDataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([
-    {
-      id: "transaction_id",
-      desc: false,
-    },
-  ]);
+  const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
@@ -80,10 +75,12 @@ export function DataTable<TData, TValue>({
     <div className="w-full">
       <div className="flex items-center py-4">
         <Input
-          placeholder="Filter by Username..."
-          value={(table.getColumn("user_id")?.getFilterValue() as string) ?? ""}
+          placeholder="Filter users..."
+          value={
+            (table.getColumn("username")?.getFilterValue() as string) ?? ""
+          }
           onChange={(event) =>
-            table.getColumn("user_id")?.setFilterValue(event.target.value)
+            table.getColumn("username")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
@@ -121,12 +118,28 @@ export function DataTable<TData, TValue>({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
+                    {header.isPlaceholder ? null : (
+                      <Button
+                        variant="ghost"
+                        onClick={
+                          header.column.getCanSort()
+                            ? () =>
+                                header.column.toggleSorting(
+                                  header.column.getIsSorted() === "asc"
+                                )
+                            : undefined
+                        }
+                        className="-ml-4 h-8"
+                      >
+                        {flexRender(
                           header.column.columnDef.header,
                           header.getContext()
                         )}
+                        {header.column.getCanSort() && (
+                          <ArrowUpDown className="ml-2 h-4 w-4" />
+                        )}
+                      </Button>
+                    )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -163,10 +176,6 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div>
         <div className="space-x-2">
           <Button
             variant="outline"

@@ -1,14 +1,8 @@
-import { UserList } from "@/components/layout/UserDashboard";
-import { clerkClient } from "@clerk/nextjs/server";
+import { UserTable } from "@/components/users/user-table";
 
-export default async function Page() {
-  const client = await clerkClient();
-  const data = await client.users.getUserList();
-  if (!data) {
-    return <div>Error</div>;
-  }
-  const users = data.data;
+export const dynamic = "force-dynamic";
 
+export default function UsersPage() {
   return (
     <div className="container mx-auto p-10">
       <div className="flex items-center justify-between pb-4">
@@ -19,7 +13,7 @@ export default async function Page() {
           </p>
         </div>
       </div>
-      <UserList users={users} />
+      <UserTable />
     </div>
   );
 }

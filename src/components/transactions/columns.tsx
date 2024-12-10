@@ -31,20 +31,20 @@ export const columns: ColumnDef<Transaction>[] = [
         aria-label="Select row"
       />
     ),
-    enableSorting: false,
-    enableHiding: false,
   },
   {
     accessorKey: "transaction_id",
     header: "ID",
     cell: ({ row }) => (
-      <div className="w-[80px]">{row.getValue("transaction_id")}</div>
+      <div className="w-[80px]">{row.original.transaction_id}</div>
     ),
   },
   {
-    accessorKey: "user_id",
-    header: "User ID",
-    cell: ({ row }) => <div>{row.getValue("user_id")}</div>,
+    accessorKey: "username",
+    header: "Username",
+    enableSorting: true,
+    enableColumnFilter: true,
+    cell: ({ row }) => <div className="text-left">{row.original.username}</div>,
   },
   {
     accessorKey: "lunch_price",
@@ -53,6 +53,7 @@ export const columns: ColumnDef<Transaction>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="w-full"
         >
           Lunch Price
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -60,32 +61,16 @@ export const columns: ColumnDef<Transaction>[] = [
       );
     },
     cell: ({ row }) => (
-      <div className="text-right">{row.getValue("lunch_price")}</div>
+      <div className="text-center">{row.original.lunch_price} VND</div>
     ),
   },
-  {
-    accessorKey: "total_price",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Total Price
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => (
-      <div className="text-right">{row.getValue("total_price")}</div>
-    ),
-  },
+
   {
     accessorKey: "transaction_confirmed",
     header: "Confirmed",
     cell: ({ row }) => (
       <div className="text-center">
-        {row.getValue("transaction_confirmed") ? "Yes" : "No"}
+        {row.original.transaction_confirmed ? "Yes" : "No"}
       </div>
     ),
   },
@@ -93,10 +78,12 @@ export const columns: ColumnDef<Transaction>[] = [
     accessorKey: "transaction_date",
     header: "Date",
     cell: ({ row }) => {
-      const date = row.getValue("transaction_date");
+      const date = row.original.transaction_date;
       return (
         <div>
-          {date instanceof Date ? date.toLocaleDateString() : String(date)}
+          {new Date(date).toString() !== "Invalid Date"
+            ? new Date(date).toLocaleDateString()
+            : String(date)}
         </div>
       );
     },
@@ -134,7 +121,14 @@ export const columns: ColumnDef<Transaction>[] = [
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>View details</DropdownMenuItem>
-            <DropdownMenuItem>View image</DropdownMenuItem>
+            <DropdownMenuItem
+              disabled={!transaction.transaction_image}
+              onClick={() => {
+                window.open(transaction.transaction_image, "_blank");
+              }}
+            >
+              View image
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

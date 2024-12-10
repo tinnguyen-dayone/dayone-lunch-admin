@@ -4,8 +4,11 @@ import { NextResponse } from "next/server";
 const isPublicRoute = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)"]);
 
 export default clerkMiddleware(async (auth, request) => {
-  // Check if the request is for the root path
-  if (request.nextUrl.pathname === "/") {
+  // Check if the request is for the root path and not an API route
+  if (
+    request.nextUrl.pathname === "/" &&
+    !request.nextUrl.pathname.startsWith("/api")
+  ) {
     // Redirect to /dashboard
     const dashboardUrl = new URL("/dashboard", request.url);
     return NextResponse.redirect(dashboardUrl);
