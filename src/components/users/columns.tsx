@@ -37,7 +37,7 @@ export const columns: ColumnDef<User>[] = [
         currency: "VND",
       }).format(amount);
 
-      return <div className="text-right font-medium">{formatted}</div>;
+      return <div className="text-left font-medium">{formatted}</div>;
     },
     sortingFn: (rowA, rowB) => {
       const a = parseFloat(rowA.getValue("totalUnpaid"));

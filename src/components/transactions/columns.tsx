@@ -69,7 +69,7 @@ export const columns: ColumnDef<Transaction>[] = [
     accessorKey: "transaction_confirmed",
     header: "Confirmed",
     cell: ({ row }) => (
-      <div className="text-center">
+      <div className="text-left pl-4">
         {row.original.transaction_confirmed ? "Yes" : "No"}
       </div>
     ),
@@ -82,7 +82,11 @@ export const columns: ColumnDef<Transaction>[] = [
       return (
         <div>
           {new Date(date).toString() !== "Invalid Date"
-            ? new Date(date).toLocaleDateString()
+            ? new Date(date).toLocaleString("vi-VN", {
+                dateStyle: "medium",
+                timeStyle: "short",
+                timeZone: "Asia/Ho_Chi_Minh",
+              })
             : String(date)}
         </div>
       );
