@@ -20,7 +20,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // output: "standalone",
+  output: "standalone",
   webpack: (config, { isServer }) => {
     if (!isServer) {
       // Don't resolve Node.js built-in modules on the client side
