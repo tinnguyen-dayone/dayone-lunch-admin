@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,44 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Transaction } from "@/types/transaction";
+
+const DescriptionDialog = ({ description }: { description: string }) => {
+  const [open, setOpen] = useState(false);
+  console.log(description);
+
+  return (
+    <>
+      <Button
+        variant="ghost"
+        className="px-2 py-1 h-auto bg-muted font-normal hover:bg-muted"
+        onClick={() => setOpen(true)}
+      >
+        View Description
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Transaction Description</DialogTitle>
+            <DialogDescription className="text-muted-foreground hidden text-xs">
+              Details of the transaction description
+            </DialogDescription>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            {description || "This transaction doesn't have a description"}
+          </p>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+};
 
 export const columns: ColumnDef<Transaction>[] = [
   {
@@ -36,7 +74,7 @@ export const columns: ColumnDef<Transaction>[] = [
     accessorKey: "transaction_id",
     header: "ID",
     cell: ({ row }) => (
-      <div className="w-[80px]">{row.original.transaction_id}</div>
+      <div className="w-[10%]">{row.original.transaction_id}</div>
     ),
   },
   {
@@ -97,6 +135,13 @@ export const columns: ColumnDef<Transaction>[] = [
     header: "Paid",
     cell: ({ row }) => (
       <div className="text-center">{row.getValue("paid") ? "Yes" : "No"}</div>
+    ),
+  },
+  {
+    accessorKey: "description",
+    header: "Description",
+    cell: ({ row }) => (
+      <DescriptionDialog description={row.original.description} />
     ),
   },
   {

@@ -10,4 +10,5 @@ export interface Transaction {
   paid: boolean;
   ticket_message_id: number;
   username: string;
+  description: string;
 }

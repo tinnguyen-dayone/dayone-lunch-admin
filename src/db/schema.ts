@@ -3,6 +3,7 @@ import {
   bigint,
   text,
   numeric,
+  index,
   foreignKey,
   serial,
   integer,
@@ -36,8 +37,17 @@ export const transactions = pgTable(
     paid: boolean().default(false),
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
     ticketMessageId: bigint("ticket_message_id", { mode: "number" }),
+    description: text(),
   },
   (table) => [
+    index("idx_transactions_paid").using(
+      "btree",
+      table.paid.asc().nullsLast().op("bool_ops")
+    ),
+    index("idx_transactions_user_id").using(
+      "btree",
+      table.userId.asc().nullsLast().op("int8_ops")
+    ),
     foreignKey({
       columns: [table.userId],
       foreignColumns: [users.userId],

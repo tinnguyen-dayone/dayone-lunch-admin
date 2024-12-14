@@ -1,8 +1,10 @@
 "use client";
 "use no memo";
 
+import { Transaction } from "@/types/transaction";
 import {
   ColumnDef,
+  TableMeta,
   ColumnFiltersState,
   SortingState,
   VisibilityState,
@@ -33,15 +35,22 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+// Define custom meta type
+interface CustomTableMeta {
+  onDescriptionClick: (description: string) => void;
+}
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  meta: CustomTableMeta;
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends Transaction>({
   columns,
   data,
-}: DataTableProps<TData, TValue>) {
+  meta,
+}: DataTableProps<TData, any>) {
   const [sorting, setSorting] = React.useState<SortingState>([
     {
       id: "transaction_id",
@@ -58,6 +67,7 @@ export function DataTable<TData, TValue>({
   const table = useReactTable({
     data,
     columns,
+    meta,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
