@@ -24,7 +24,6 @@ import { Transaction } from "@/types/transaction";
 
 const DescriptionDialog = ({ description }: { description: string }) => {
   const [open, setOpen] = useState(false);
-  console.log(description);
 
   return (
     <>

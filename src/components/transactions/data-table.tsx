@@ -4,7 +4,6 @@
 import { Transaction } from "@/types/transaction";
 import {
   ColumnDef,
-  TableMeta,
   ColumnFiltersState,
   SortingState,
   VisibilityState,
@@ -50,7 +49,7 @@ export function DataTable<TData extends Transaction>({
   columns,
   data,
   meta,
-}: DataTableProps<TData, any>) {
+}: DataTableProps<TData, unknown>) {
   const [sorting, setSorting] = React.useState<SortingState>([
     {
       id: "transaction_id",
