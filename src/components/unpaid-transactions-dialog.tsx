@@ -36,7 +36,7 @@ export function UnpaidTransactionsDialog({ userId, userName }: Props) {
   const fetchTransactions = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/users/${userId}/unpaid`);
+      const response = await fetch(`/api/users/unpaid/${userId}`);
       if (!response.ok) throw new Error("Failed to fetch transactions");
       const data = await response.json();
       setTransactions(data);

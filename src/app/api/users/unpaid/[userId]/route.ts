@@ -4,12 +4,10 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   request: Request,
-  context: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
-  const { userId } = await context.params;
-
   try {
-    // Parse userId to ensure it's a valid number
+    const { userId } = await params;
     const userIdBigInt = BigInt(userId);
 
     const transactions = await db.execute(sql`
