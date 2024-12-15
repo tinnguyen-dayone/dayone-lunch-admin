@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -5,7 +6,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -15,7 +15,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatVND } from "@/lib/utils";
-import { FileText } from "lucide-react";
 import { useState } from "react";
 
 interface UnpaidTransaction {
@@ -69,7 +68,7 @@ export function UnpaidTransactionsDialog({ userId, userName }: Props) {
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{userName}'s Unpaid Transactions</DialogTitle>
+          <DialogTitle>{userName}&apos;s Unpaid Transactions</DialogTitle>
         </DialogHeader>
         {loading ? (
           <div className="py-4 text-center">Loading...</div>
