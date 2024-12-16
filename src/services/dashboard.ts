@@ -90,26 +90,3 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     mealDistribution,
   };
 }
-
-export type Period = "week" | "month" | "year";
-
-export async function getTransactionsByPeriod(period: Period) {
-  const query =
-    period === "week"
-      ? sql`transaction_date >= CURRENT_DATE - INTERVAL '7 days'`
-      : period === "month"
-      ? sql`transaction_date >= CURRENT_DATE - INTERVAL '30 days'`
-      : sql`transaction_date >= CURRENT_DATE - INTERVAL '1 year'`;
-
-  const format = period === "week" ? "Dy" : period === "month" ? "DD" : "Mon";
-
-  return db
-    .select({
-      day: sql<string>`to_char(transaction_date, ${format})`,
-      transactions: sql<number>`COUNT(*)`,
-    })
-    .from(transactions)
-    .where(query)
-    .groupBy(sql`to_char(transaction_date, ${format})`)
-    .orderBy(sql`min(transaction_date)`);
-}

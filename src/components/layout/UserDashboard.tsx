@@ -1,6 +1,5 @@
 import Image from "next/image";
-
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar } from "@/components/ui/avatar";
 import {
   Table,
   TableBody,
@@ -9,11 +8,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { serializeClerkUser } from "@/lib/utils";
-import { User } from "@clerk/backend";
-import { UserActions } from "../user-actions";
 
-export function UserList({ users }: { users: User[] }) {
+interface User {
+  id: string;
+  email: string;
+  imageUrl: string;
+}
+
+interface UserDashboardProps {
+  users: User[];
+}
+
+export function UserDashboard({ users }: UserDashboardProps) {
   return (
     <div className="rounded-md border">
       <Table>
@@ -25,33 +31,23 @@ export function UserList({ users }: { users: User[] }) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {users.map((user) => {
-            const serializedUser = serializeClerkUser(user);
-            return (
-              <TableRow key={user.id}>
-                <TableCell className="w-[80px]">
-                  <Avatar>
-                    <Image
-                      src={serializedUser.imageUrl}
-                      alt={serializedUser.email}
-                      width={40}
-                      height={40}
-                      className="rounded-full"
-                    />
-                    <AvatarFallback>
-                      {serializedUser.email.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                </TableCell>
-                <TableCell className="font-medium">
-                  {serializedUser.email}
-                </TableCell>
-                <TableCell>
-                  <UserActions user={serializedUser} />
-                </TableCell>
-              </TableRow>
-            );
-          })}
+          {users.map((user) => (
+            <TableRow key={user.id}>
+              <TableCell className="w-[80px]">
+                <Avatar>
+                  <Image
+                    src={user.imageUrl}
+                    alt={user.email}
+                    width={40}
+                    height={40}
+                    className="rounded-full"
+                  />
+                </Avatar>
+              </TableCell>
+              <TableCell>{user.email}</TableCell>
+              <TableCell>{/* Add your custom actions here */}</TableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
     </div>

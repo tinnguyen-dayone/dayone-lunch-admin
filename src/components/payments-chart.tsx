@@ -35,10 +35,12 @@ export function PaymentsChart() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const transactions = await fetchTransactionStats(period);
+        const response = await fetchTransactionStats(period);
+        const transactions = response.weeklyTransactions || response;
         setData(transactions);
       } catch (error) {
         console.error("Failed to fetch transaction data:", error);
+        setData([]);
       } finally {
         setLoading(false);
       }

@@ -57,50 +57,51 @@ export async function GET(request: Request) {
     if (period === "transactions") {
       const timeframe = searchParams.get("timeframe") || "week";
 
-      // For week view, we want to include all days even if there are no transactions
       if (timeframe === "week") {
         const transactionData = await db.execute(sql`
           WITH dates AS (
-            SELECT generate_series(
-              date_trunc('week', CURRENT_DATE),
-              date_trunc('week', CURRENT_DATE) + interval '6 days',
-              interval '1 day'
-            ) AS date
-          ),
-          daily_counts AS (
             SELECT 
-              to_char(date_trunc('day', transaction_date), 'Day') as day,
-              COUNT(*) as transactions,
-              EXTRACT(DOW FROM date_trunc('day', transaction_date)) as dow
-            FROM transactions 
-            WHERE transaction_date >= CURRENT_DATE - INTERVAL '7 days'
-            GROUP BY 1, date_trunc('day', transaction_date)
+              generate_series(
+                date_trunc('week', CURRENT_DATE),
+                date_trunc('week', CURRENT_DATE) + interval '6 days',
+                interval '1 day'
+              ) AS date
           )
           SELECT 
-            to_char(dates.date, 'Day') as day,
-            COALESCE(daily_counts.transactions, 0) as transactions
+            to_char(dates.date, 'Dy') as day,
+            COALESCE((
+              SELECT COUNT(*) 
+              FROM transactions 
+              WHERE date_trunc('day', transaction_date) = dates.date
+            ), 0) as transactions
           FROM dates
-          LEFT JOIN daily_counts ON to_char(dates.date, 'Day') = daily_counts.day
-          ORDER BY EXTRACT(DOW FROM dates.date)
+          ORDER BY dates.date
         `);
         return NextResponse.json(transactionData.rows);
       }
 
-      // For month and year views
+      // For month and year views, generate date series
+      const interval = timeframe === "month" ? "30 days" : "1 year";
       const dateFormat = timeframe === "year" ? "'Mon'" : "'DD'";
-      const query =
-        timeframe === "month"
-          ? sql`transaction_date >= CURRENT_DATE - INTERVAL '30 days'`
-          : sql`transaction_date >= CURRENT_DATE - INTERVAL '1 year'`;
 
       const transactionData = await db.execute(sql`
+        WITH date_range AS (
+          SELECT 
+            generate_series(
+              date_trunc('day', CURRENT_DATE - INTERVAL '${interval}'),
+              date_trunc('day', CURRENT_DATE),
+              interval '1 day'
+            ) AS date
+        )
         SELECT 
-          to_char(date_trunc('day', transaction_date), ${dateFormat}) as day,
-          COUNT(*) as transactions
-        FROM transactions 
-        WHERE ${query}
-        GROUP BY 1
-        ORDER BY MIN(transaction_date)
+          to_char(date_range.date, ${dateFormat}) as day,
+          COALESCE((
+            SELECT COUNT(*) 
+            FROM transactions 
+            WHERE date_trunc('day', transaction_date) = date_range.date
+          ), 0) as transactions
+        FROM date_range
+        ORDER BY date_range.date
       `);
 
       return NextResponse.json(transactionData.rows);
@@ -127,43 +128,33 @@ export async function GET(request: Request) {
       .where(sql`transaction_date >= CURRENT_DATE - INTERVAL '30 days'`);
 
     // Get weekly transactions
-    const weeklyTransactions = await db
-      .select({
-        day: sql<string>`to_char(transaction_date, 'Dy')`,
-        transactions: sql<number>`COUNT(*)`,
-      })
-      .from(transactions)
-      .where(sql`transaction_date >= CURRENT_DATE - INTERVAL '7 days'`)
-      .groupBy(sql`to_char(transaction_date, 'Dy')`);
+    const weeklyTransactions = await db.execute(sql`
+      WITH dates AS (
+        SELECT 
+          generate_series(
+            date_trunc('week', CURRENT_DATE),
+            date_trunc('week', CURRENT_DATE) + interval '6 days',
+            interval '1 day'
+          ) AS date
+      )
+      SELECT 
+        to_char(dates.date, 'Dy') as day,
+        COALESCE((
+          SELECT COUNT(*) 
+          FROM transactions 
+          WHERE date_trunc('day', transaction_date) = dates.date
+        ), 0) as transactions
+      FROM dates
+      ORDER BY dates.date
+    `);
 
     // Get meal distribution (based on time of day)
-    const mealDistribution = await db
-      .select({
-        name: sql<string>`
-          CASE 
-            WHEN EXTRACT(HOUR FROM transaction_date) < 11 THEN 'Breakfast'
-            WHEN EXTRACT(HOUR FROM transaction_date) < 15 THEN 'Lunch'
-            ELSE 'Dinner'
-          END
-        `,
-        value: sql<number>`COUNT(*)`,
-      })
-      .from(transactions)
-      .where(sql`transaction_date >= CURRENT_DATE - INTERVAL '30 days'`)
-      .groupBy(sql`
-        CASE 
-          WHEN EXTRACT(HOUR FROM transaction_date) < 11 THEN 'Breakfast'
-          WHEN EXTRACT(HOUR FROM transaction_date) < 15 THEN 'Lunch'
-          ELSE 'Dinner'
-        END
-      `);
 
     const result = {
       totalOrdersToday: totalOrdersToday[0]?.count || 0,
       averageOrderValue: Number(avgOrderValue[0]?.avg || 0).toFixed(2),
       activeCustomers: activeCustomers[0]?.count || 0,
-      weeklyTransactions,
-      mealDistribution,
+      weeklyTransactions: weeklyTransactions.rows,
     };
 
     // Add proper headers and status

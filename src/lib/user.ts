@@ -1,10 +1,6 @@
-import { User } from "@clerk/backend";
-
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-
-export async function getUsers(): Promise<User[]> {
+export async function getUsers(): Promise<[]> {
   try {
-    const response = await fetch(`${BASE_URL}/api/users`);
+    const response = await fetch(`/api/users`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }

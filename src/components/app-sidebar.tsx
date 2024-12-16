@@ -20,7 +20,6 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { navItems } from "@/constants/data";
-import { SignedIn, UserButton } from "@clerk/nextjs";
 import { ChevronRight, GalleryVerticalEnd } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -110,11 +109,7 @@ export default function AppSidebar() {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
-          <SidebarMenuItem>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
-          </SidebarMenuItem>
+          <SidebarMenuItem></SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
       <SidebarRail />

@@ -16,26 +16,16 @@ export async function fetchTransactions(): Promise<Transaction[]> {
   }
 }
 
-export async function fetchTransactionStats(timeframe: TimeFrame) {
-  try {
-    const origin =
-      typeof window !== "undefined"
-        ? window.location.origin
-        : "http://localhost:3000";
-    const response = await fetch(
-      `${origin}/api/stats?period=transactions&timeframe=${timeframe}`
-    );
+export async function fetchTransactionStats(period: TimeFrame) {
+  const response = await fetch(`/api/stats?period=${period}`, {
+    cache: "no-store",
+  });
 
-    if (!response.ok) {
-      throw new Error(
-        `Failed to fetch transaction stats: ${response.statusText}`
-      );
-    }
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching transaction stats:", error);
-    return [];
+  if (!response.ok) {
+    throw new Error("Failed to fetch transaction stats");
   }
+
+  return response.json();
 }
 
 export async function fetchPriceAnalytics(timeframe: TimeFrame) {

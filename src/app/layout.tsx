@@ -1,4 +1,3 @@
-import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import NextTopLoader from "nextjs-toploader";
 import "./globals.css";
@@ -14,13 +13,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider dynamic>
-      <html lang="en" suppressHydrationWarning={true}>
-        <body>
-          <NextTopLoader showSpinner={false} />
-          {children}
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="en" suppressHydrationWarning={true}>
+      <body>
+        <NextTopLoader showSpinner={false} />
+        {children}
+      </body>
+    </html>
   );
 }
