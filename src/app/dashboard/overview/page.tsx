@@ -1,4 +1,4 @@
-import { Banknote, ShoppingBag, Users } from "lucide-react";
+import { Banknote, ShoppingBag, Users, AlertCircle } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -12,13 +12,24 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { StatsCard } from "@/components/stats-card";
 import { PaymentsChart } from "@/components/payments-chart";
 import { PriceAnalysisChart } from "@/components/price-analysis-chart";
-import { getDashboardStats } from "@/services/dashboard";
+import {
+  getActiveCustomers,
+  getAverageOrderValue,
+  getTotalOrdersToday,
+  getTotalUnpaid,
+} from "@/services/dashboard";
 import { TopUnpaidUsers } from "@/components/top-unpaid-users";
 
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  const stats = await getDashboardStats();
+  const [totalOrdersToday, averageOrderValue, activeCustomers, totalUnpaid] =
+    await Promise.all([
+      getTotalOrdersToday(),
+      getAverageOrderValue(),
+      getActiveCustomers(),
+      getTotalUnpaid(),
+    ]);
 
   return (
     <section>
@@ -40,21 +51,27 @@ export default async function Page() {
         </div>
       </header>
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-        <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+        <div className="grid auto-rows-min gap-4 md:grid-cols-4">
           <StatsCard
             title="Total Orders Today"
-            value={stats.totalOrdersToday.toString()}
+            value={totalOrdersToday.toString()}
             icon={<ShoppingBag className="h-4 w-4 text-muted-foreground" />}
           />
           <StatsCard
             title="Average Order Value"
-            value={stats.averageOrderValue} // Remove the $ prefix since formatVND handles it
+            value={averageOrderValue}
             icon={<Banknote className="h-4 w-4 text-muted-foreground" />}
           />
           <StatsCard
             title="Active Customers"
-            value={stats.activeCustomers.toString()}
+            value={activeCustomers.toString()}
             icon={<Users className="h-4 w-4 text-muted-foreground" />}
+          />
+          <StatsCard
+            title="Total Unpaid"
+            value={totalUnpaid}
+            icon={<AlertCircle className="h-4 w-4 text-red-500" />}
+            className="bg-red-50"
           />
         </div>
         <div className="grid gap-4 md:grid-cols-2">
